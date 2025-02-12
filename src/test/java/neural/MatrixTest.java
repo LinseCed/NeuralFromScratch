@@ -4,7 +4,7 @@ import com.linusbauer.neural.Matrix;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
-public class MatrixTest {
+class MatrixTest {
 
     @Test
     void testAddition() {
@@ -22,5 +22,18 @@ public class MatrixTest {
         Matrix m1 = new Matrix(3, 3, 0);
         Matrix m2 = new Matrix(3, 3, 0);
         assertEquals(m1, m2);
+    }
+
+    @Test
+    void testMultiply() {
+        Matrix m1 = new Matrix(3, 3, 0);
+        Matrix m2 = new Matrix(3, 3, 0);
+       m1.set(0, 0, 1);
+       m1.set(0, 1, 2);
+       m1.set(2, 2, 5);
+       m2.set(0, 2, 7);
+       m2.set(1, 0, 2);
+       m2.set(2, 1, 3);
+       System.out.println(m1.multiply(m2));
     }
 }
