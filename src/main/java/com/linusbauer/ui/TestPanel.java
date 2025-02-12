@@ -8,7 +8,6 @@ import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.text.spi.BreakIteratorProvider;
 
 public class TestPanel extends JPanel {
     private final BufferedImage canvas;

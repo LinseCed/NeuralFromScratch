@@ -35,14 +35,11 @@ public class UI {
     }
 
     private void sidebar() {
-        JPanel sidebarPanel = new JPanel();
-        sidebarPanel.setLayout(new BoxLayout(sidebarPanel, BoxLayout.Y_AXIS));
-        sidebarPanel.setPreferredSize(new Dimension(80, this.frame.getHeight()));
-        sidebarPanel.setBackground(Color.DARK_GRAY);
-        sidebarPanel.add(getSidebarButton("Home"));
-        sidebarPanel.add(getSidebarButton("Second"));
-        sidebarPanel.add(getSidebarButton("TestPanel"));
-        this.frame.getContentPane().add(sidebarPanel, BorderLayout.WEST);
+        Sidebar sidebar = new Sidebar(80, frame.getWidth());
+        sidebar.addSideBarButton(getSidebarButton("Home"));
+        sidebar.addSideBarButton(getSidebarButton("Second"));
+        sidebar.addSideBarButton(getSidebarButton("TestPanel"));
+        this.frame.getContentPane().add(sidebar, BorderLayout.WEST);
         this.frame.revalidate();
         this.frame.repaint();
     }
