@@ -62,7 +62,7 @@ public class UI {
         panel.setLayout(null);
         panel.setBounds(0, 0, 800, 600);
 
-        JLabel label = new JLabel("Welcome to LinusBauer");
+        JLabel label = new JLabel("Welcome to the my Neural Network");
         label.setBounds(300, 50, 200, 30);
 
         JButton exitButton = new JButton("Exit");
