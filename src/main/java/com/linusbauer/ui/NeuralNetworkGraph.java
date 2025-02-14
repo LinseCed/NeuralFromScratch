@@ -7,4 +7,5 @@ public class NeuralNetworkGraph {
     NeuralNetworkGraph(NeuralNetwork network) {
         this.network = network;
     }
+    
 }

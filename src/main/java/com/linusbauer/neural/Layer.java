@@ -5,20 +5,28 @@ public class Layer {
     Matrix biased;
     Matrix weights;
     public Layer(int neuronCount) {
-        this.output = new Matrix(1, neuronCount);
-        this.biased = new Matrix(1, neuronCount);
+        this.output = new Matrix(neuronCount, 1);
+        this.biased = new Matrix(neuronCount, 1);
     }
     public Layer() {
         this(0);
     }
     Layer nextLayer(int neuronCount) {
-        Layer layer = new Layer();
-        layer.output = new Matrix(1, neuronCount);
-        layer.biased = new Matrix(1, neuronCount);
-        this.weights = new Matrix(this.output.getCols(), layer.output.getCols());
+        Layer layer = new Layer(neuronCount);
+        this.weights = new Matrix(this.output.getRows(), layer.output.getRows());
         return layer;
     }
-    public void forward() {
-        // TODO
+    public static void forward(Layer curr, Layer prev) {
+        System.out.println("prev.output: " + prev.output + "prev.weights: " +  prev.weights + " curr.biased " + curr.biased);
+        curr.output = prev.output.multiply(prev.weights).transpose().add(curr.biased).sigmoid();
+    }
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder();
+      sb.append("Layer[\n");
+      sb.append(output);
+      sb.append(biased);
+      sb.append(weights);
+      return sb.toString();
     }
 }

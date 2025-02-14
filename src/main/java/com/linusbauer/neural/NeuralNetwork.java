@@ -19,11 +19,33 @@ public class NeuralNetwork {
             }
         }
         for (Layer layer : layers) {
-            layer.weights.randomize(-0.5f, 0.5f);
+           if (layer.weights != null) {
+              layer.weights.randomize(-0.5f, 0.5f);
+           }
         }
     }
 
-    public void forward() {
-
+    public void forward(final Matrix input) {
+        if (layers.getFirst().output.getCols() != input.getCols() || layers.getFirst().output.getRows() != input.getRows()) {
+            throw new IllegalStateException("Size of Input must match the size of first layer output");
+        }
+        layers.getFirst().output = input;
+        for (int i = 1; i < layers.size(); i++) {
+            Layer curr = layers.get(i);
+            Layer prev = layers.get(i - 1);
+            prev.output = prev.output.transpose();
+            Layer.forward(curr, prev);
+        }
+        System.out.println(layers.getLast().output);
+    }
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder();
+      sb.append("NeuralNetwork: \n");
+      sb.append("Number of Layers: " + layers.size() + "\n");      
+      for (Layer layer : this.layers) {
+        sb.append(layer);
+      }
+      return sb.toString();
     }
 }

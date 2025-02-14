@@ -10,8 +10,8 @@ import java.io.File;
 import java.io.IOException;
 
 public class TestPanel extends JPanel {
-    private final BufferedImage canvas;
-    private final Graphics2D g2d;
+    private final transient BufferedImage canvas;
+    private final transient Graphics2D g2d;
     int prevX;
     int prevY;
 
@@ -33,6 +33,19 @@ public class TestPanel extends JPanel {
         g2d.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
         g2d.setColor(Color.WHITE);
         g2d.setStroke(new BasicStroke(20));
+        JPanel drawingPanel = getDrawingPanel();
+        add(drawingPanel, c);
+        JButton testButton = new JButton("Test");
+        testButton.setPreferredSize(new Dimension(100, 20));
+        testButton.setMaximumSize(new Dimension(100, 20));
+        testButton.addActionListener(e -> saveAs28x28("Test.png"));
+        c.gridx = 1;
+        c.weightx = 0.1;
+        c.anchor = GridBagConstraints.SOUTH;
+        this.add(testButton, c);
+    }
+
+    private JPanel getDrawingPanel() {
         JPanel drawingPanel = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {
@@ -60,15 +73,7 @@ public class TestPanel extends JPanel {
                drawingPanel.repaint();
            }
         });
-        add(drawingPanel, c);
-        JButton testButton = new JButton("Test");
-        testButton.setPreferredSize(new Dimension(100, 20));
-        testButton.setMaximumSize(new Dimension(100, 20));
-        testButton.addActionListener(e -> saveAs28x28("Test.png"));
-        c.gridx = 1;
-        c.weightx = 0.1;
-        c.anchor = GridBagConstraints.SOUTH;
-        this.add(testButton, c);
+        return drawingPanel;
     }
 
     private void saveAs28x28(String fileName) {

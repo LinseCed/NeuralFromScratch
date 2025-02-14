@@ -1,16 +1,16 @@
 package com.linusbauer.neural;
 
 public class Matrix {
-    private final int cols;
-    private final int rows;
+    private int cols;
+    private int rows;
     private final float[] data;
     public Matrix(int rows, int cols, float val) {
         this.cols = cols;
         this.rows = rows;
-        this.data = new float[cols*rows];
-        for (int i = 0; i < cols; i++) {
-            for (int j = 0; j < rows; j++) {
-                this.data[i*rows+j] = val;
+        this.data = new float[rows*cols];
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                this.data[i*cols+j] = val;
             }
         }
     }
@@ -18,12 +18,12 @@ public class Matrix {
         this(rows, cols, 0);
     }
     public float at(int row, int col) {
-        return this.data[row*rows+col];
+        return this.data[row*cols+col];
     }
     public Matrix fill(float val) {
-        for (int i = 0; i < cols; i++) {
-            for (int j = 0; j < rows; j++) {
-                this.data[i*rows+j] = val;
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                this.data[i*cols+j] = val;
             }
         }
         return this;
@@ -42,9 +42,9 @@ public class Matrix {
         if (this.cols != other.cols || this.rows != other.rows) {
             throw new IllegalArgumentException("Matrix does not have the same number of columns and rows");
         }
-        for (int i = 0; i < cols; i++) {
-            for (int j = 0; j < rows; j++) {
-                this.data[i*rows+j] += other.data[i*rows+j];
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                this.data[i*cols+j] += other.data[i*cols+j];
             }
         }
         return this;
@@ -56,9 +56,9 @@ public class Matrix {
         if (this.cols != other.cols || this.rows != other.rows) {
             throw new IllegalArgumentException("Matrix does not have the same number of columns and rows");
         }
-        for (int i = 0; i < cols; i++) {
-            for (int j = 0; j < rows; j++) {
-                this.data[i*rows+j] -= other.data[i*rows+j];
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                this.data[i*cols+j] -= other.data[i*cols+j];
             }
         }
         return this;
@@ -86,7 +86,7 @@ public class Matrix {
     public Matrix square() {
         for (int i = 0; i < this.rows; i++) {
             for (int j = 0; j < this.cols; j++) {
-                this.data[i*rows+j] *= this.data[i*rows+j];
+                this.data[i*cols+j] *= this.data[i*cols+j];
             }
         }
         return this;
@@ -94,15 +94,15 @@ public class Matrix {
     public Matrix multiply(float val) {
         for (int i = 0; i < this.rows; i++) {
             for (int j = 0; j < this.cols; j++) {
-                this.data[i*rows+j] *= val;
+                this.data[i*cols+j] *= val;
             }
         }
         return this;
     }
     public Matrix randomize(float max, float min) {
-        for (int i = 0; i < cols; i++) {
-            for (int j = 0; j < rows; j++) {
-                this.data[i*rows*j] = (float) Math.random() * (max - min) + min;
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                this.data[i*cols+j] = (float) Math.random() * (max - min) + min;
             }
         }
         return this;
@@ -120,8 +120,8 @@ public class Matrix {
         return (float) (1 / (1 + Math.exp(-val)));
     }
     public Matrix sigmoid() {
-        for (int i = 0; i < this.rows; i++) {
-            for (int j = 0; j < this.cols; j++) {
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
                 this.set(i, j, this.sigmoid(this.at(i, j)));
             }
         }
@@ -143,9 +143,9 @@ public class Matrix {
         Matrix matrix = (Matrix) o;
         if (cols != matrix.cols) return false;
         if (rows != matrix.rows) return false;
-        for (int i = 0; i < cols; i++) {
-            for (int j = 0; j < rows; j++) {
-                if (data[i*rows+j] != matrix.data[i*rows+j]) return false;
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                if (data[i*cols+j] != matrix.data[i*cols+j]) return false;
             }
         }
         return true;
@@ -153,10 +153,10 @@ public class Matrix {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("[\n");
-        for (int i = 0; i < cols; i++) {
-            for (int j = 0; j < rows; j++) {
-                sb.append(data[i*rows+j]);
+        sb.append("Rows: "+ rows + " Cols: " + cols + "[\n");
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                sb.append(data[i*cols+j]);
                 sb.append(" ");
             }
             sb.append("\n");
