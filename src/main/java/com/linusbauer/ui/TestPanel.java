@@ -1,5 +1,7 @@
 package com.linusbauer.ui;
 
+import com.linusbauer.neural.Matrix;
+
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
@@ -14,7 +16,6 @@ public class TestPanel extends JPanel {
     private final transient Graphics2D g2d;
     int prevX;
     int prevY;
-
     public TestPanel() {
         this.setPreferredSize(new Dimension(400, 450));
         this.setBackground(Color.LIGHT_GRAY);
@@ -32,17 +33,27 @@ public class TestPanel extends JPanel {
         this.g2d.setColor(Color.BLACK);
         g2d.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
         g2d.setColor(Color.WHITE);
-        g2d.setStroke(new BasicStroke(20));
+        g2d.setStroke(new BasicStroke(20, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
         JPanel drawingPanel = getDrawingPanel();
         add(drawingPanel, c);
+        JButton clear = new JButton("Clear");
+        clear.setPreferredSize(new Dimension(100, 20));
+        clear.setMaximumSize(new Dimension(100, 20));
+        clear.addActionListener(e -> {
+            g2d.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
+            this.repaint();
+        });
         JButton testButton = new JButton("Test");
         testButton.setPreferredSize(new Dimension(100, 20));
         testButton.setMaximumSize(new Dimension(100, 20));
-        testButton.addActionListener(e -> saveAs28x28("Test.png"));
+        testButton.addActionListener(e -> testDrawnImage("Test.png"));
         c.gridx = 1;
         c.weightx = 0.1;
         c.anchor = GridBagConstraints.SOUTH;
         this.add(testButton, c);
+        c.gridx = 0;
+        c.gridy = 1;
+        this.add(clear, c);
     }
 
     private JPanel getDrawingPanel() {
@@ -76,7 +87,7 @@ public class TestPanel extends JPanel {
         return drawingPanel;
     }
 
-    private void saveAs28x28(String fileName) {
+    private void testDrawnImage(String fileName) {
         BufferedImage small = new BufferedImage(28, 28, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2d = small.createGraphics();
         g2d.drawImage(canvas, 0, 0, 28, 28, null);
@@ -86,6 +97,13 @@ public class TestPanel extends JPanel {
             ImageIO.write(small, "png", outputFile);
         } catch (IOException e) {
             e.printStackTrace();
+        }
+        Matrix input = new Matrix(28, 28);
+        float[] data = small.getData().getPixels(0, 0, 28, 28, (float[]) null);
+        for (int i = 0; i < 28; i++) {
+            for (int j = 0; j < 28; j++) {
+                input.set(i, j, data[i * 28 + j * 4]);
+            }
         }
     }
 
