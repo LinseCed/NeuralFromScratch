@@ -1,59 +1,79 @@
 package com.linusbauer.ui;
 
 import com.linusbauer.neural.Matrix;
+import com.linusbauer.neural.NeuralNetwork;
 
-import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class TestPanel extends JPanel {
     private final transient BufferedImage canvas;
     private final transient Graphics2D g2d;
     int prevX;
     int prevY;
-    public TestPanel() {
+    private final transient NeuralNetwork network;
+    private Matrix expected;
+    private List<JButton> numberButtons;
+    public TestPanel(NeuralNetwork network) {
+        this.network = network;
+        this.numberButtons = new ArrayList<>();
+        this.expected = new Matrix(10, 1);
         this.setPreferredSize(new Dimension(400, 450));
         this.setBackground(Color.LIGHT_GRAY);
-        this.setLayout(new GridBagLayout());
-        GridBagConstraints c = new GridBagConstraints();
-        c.insets = new Insets(10, 10, 10, 10);
-        c.gridx = 0;
-        c.gridy = 0;
-        c.weightx = 1;
-        c.weighty = 1;
-        c.anchor = GridBagConstraints.CENTER;
-        c.fill = GridBagConstraints.NONE;
+        this.setLayout(new BorderLayout(10, 10));
         this.canvas = new BufferedImage(400, 400, BufferedImage.TYPE_INT_ARGB);
         this.g2d = canvas.createGraphics();
         this.g2d.setColor(Color.BLACK);
         g2d.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
         g2d.setColor(Color.WHITE);
         g2d.setStroke(new BasicStroke(20, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-        JPanel drawingPanel = getDrawingPanel();
-        add(drawingPanel, c);
+        JPanel centerPanel = new JPanel();
+        centerPanel.setOpaque(false);
+        GridBagConstraints c = new GridBagConstraints();
+        c.gridx = 0;
+        c.gridy = 0;
+        centerPanel.add(getDrawingPanel(), c);
+        this.add(centerPanel, BorderLayout.CENTER);
+        JPanel controlPanel = new JPanel();
+        controlPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 10, 10));
         JButton clear = new JButton("Clear");
-        clear.setPreferredSize(new Dimension(100, 20));
-        clear.setMaximumSize(new Dimension(100, 20));
         clear.addActionListener(e -> {
             g2d.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
             this.repaint();
         });
         JButton testButton = new JButton("Test");
-        testButton.setPreferredSize(new Dimension(100, 20));
-        testButton.setMaximumSize(new Dimension(100, 20));
-        testButton.addActionListener(e -> testDrawnImage("Test.png"));
-        c.gridx = 1;
-        c.weightx = 0.1;
-        c.anchor = GridBagConstraints.SOUTH;
-        this.add(testButton, c);
-        c.gridx = 0;
-        c.gridy = 1;
-        this.add(clear, c);
+        JLabel resultLabel = new JLabel("Result: ");
+        testButton.addActionListener(e -> {
+            resultLabel.setText("Result: " + testDrawnImage());
+        });
+        resultLabel.setText("Result: ");
+        controlPanel.add(testButton);
+        controlPanel.add(resultLabel);
+        controlPanel.add(clear);
+        this.add(controlPanel, BorderLayout.SOUTH);
+        JPanel numberPanel = new JPanel();
+        numberPanel.setLayout(new GridLayout(1, 10, 5, 5));
+        for (int i = 0; i < 10; i++) {
+            JButton numberButton = new JButton("" + i);
+            numberButton.setName("" + i);
+            numberButton.setPreferredSize(new Dimension(40, 40));
+            numberButton.addActionListener(e -> {
+                this.numberButtons.forEach(button -> {
+                    button.setBackground(Color.WHITE);
+                    this.expected = new Matrix(10, 1);
+                });
+                this.expected.set(Integer.parseInt(numberButton.getName()), 0, 1);
+                numberButton.setBackground(Color.LIGHT_GRAY);
+            });
+            this.numberButtons.add(numberButton);
+            numberPanel.add(numberButton);
+        }
+        this.add(numberPanel, BorderLayout.NORTH);
     }
 
     private JPanel getDrawingPanel() {
@@ -65,6 +85,8 @@ public class TestPanel extends JPanel {
             }
         };
         drawingPanel.setPreferredSize(new Dimension(400, 400));
+        drawingPanel.setMinimumSize(new Dimension(400, 400));
+        drawingPanel.setMaximumSize(new Dimension(400, 400));
         drawingPanel.setBackground(Color.BLACK);
         drawingPanel.addMouseListener(new MouseAdapter() {
             @Override
@@ -87,24 +109,18 @@ public class TestPanel extends JPanel {
         return drawingPanel;
     }
 
-    private void testDrawnImage(String fileName) {
+    private String testDrawnImage() {
         BufferedImage small = new BufferedImage(28, 28, BufferedImage.TYPE_INT_ARGB);
-        Graphics2D g2d = small.createGraphics();
-        g2d.drawImage(canvas, 0, 0, 28, 28, null);
-        g2d.dispose();
-        try {
-            File outputFile = new File(fileName);
-            ImageIO.write(small, "png", outputFile);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        Matrix input = new Matrix(28, 28);
+        Matrix input = new Matrix(784, 1);
         float[] data = small.getData().getPixels(0, 0, 28, 28, (float[]) null);
         for (int i = 0; i < 28; i++) {
             for (int j = 0; j < 28; j++) {
-                input.set(i, j, data[i * 28 + j * 4]);
+                input.set(i + j, 0, data[i * 28 + j * 4]);
             }
         }
+        String result = network.forward(input);
+        network.backprop(this.expected);
+        return result;
     }
 
     public String getPanelName() {

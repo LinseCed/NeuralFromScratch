@@ -1,9 +1,12 @@
 package com.linusbauer.ui;
 
 import com.formdev.flatlaf.FlatLightLaf;
+import com.linusbauer.neural.NeuralNetwork;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class UI {
     private JFrame frame;
@@ -26,9 +29,29 @@ public class UI {
         this.cardLayout = new CardLayout();
         this.contentPanel = new JPanel(this.cardLayout);
         homescreen();
-        second();
-        TestPanel testPanel = new TestPanel();
+        java.util.List<Integer> layers = new ArrayList<>();
+        layers.add(784);
+        layers.add(28);
+        layers.add(28);
+        layers.add(10);
+        List<String> outputs = new ArrayList<>();
+        outputs.add("0");
+        outputs.add("1");
+        outputs.add("2");
+        outputs.add("3");
+        outputs.add("4");
+        outputs.add("5");
+        outputs.add("6");
+        outputs.add("7");
+        outputs.add("8");
+        outputs.add("9");
+        NeuralNetwork network = new NeuralNetwork(layers, outputs);
+        TestPanel testPanel = new TestPanel(network);
+        TrainPanel trainPanel = new TrainPanel(network);
+        NeuralNetworkGraph neuralNetworkGraph = new NeuralNetworkGraph(network);
+        this.contentPanel.add(neuralNetworkGraph, neuralNetworkGraph.getPanelName());
         this.contentPanel.add(testPanel, testPanel.getPanelName());
+        this.contentPanel.add(trainPanel, trainPanel.getPanelName());
         sidebar();
         this.frame.add(this.contentPanel, BorderLayout.CENTER);
         this.frame.setVisible(true);
@@ -37,7 +60,8 @@ public class UI {
     private void sidebar() {
         Sidebar sidebar = new Sidebar(80, frame.getWidth());
         sidebar.addSideBarButton(getSidebarButton("Home"));
-        sidebar.addSideBarButton(getSidebarButton("Second"));
+        sidebar.addSideBarButton(getSidebarButton("Neural Network Graph"));
+        sidebar.addSideBarButton(getSidebarButton("TrainPanel"));
         sidebar.addSideBarButton(getSidebarButton("TestPanel"));
         this.frame.getContentPane().add(sidebar, BorderLayout.WEST);
         this.frame.revalidate();
@@ -73,16 +97,5 @@ public class UI {
         panel.add(exitButton);
         panel.setBackground(Color.LIGHT_GRAY);
         this.contentPanel.add(panel, "Home");
-    }
-    
-    private void second() {
-        JPanel panel = new JPanel();
-        panel.setLayout(null);
-        panel.setBounds(0, 0, 800, 600);
-        JLabel label = new JLabel("This is a second screen");
-        label.setBounds(300, 50, 200, 30);
-        panel.add(label);
-        panel.setBackground(Color.LIGHT_GRAY);
-        this.contentPanel.add(panel, "Second");
     }
 }

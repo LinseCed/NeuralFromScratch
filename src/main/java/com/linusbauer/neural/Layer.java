@@ -4,7 +4,9 @@ public class Layer {
     Matrix output;
     Matrix biased;
     Matrix weights;
+    private int numberOfNeurons;
     public Layer(int neuronCount) {
+        this.numberOfNeurons = neuronCount;
         this.output = new Matrix(neuronCount, 1);
         this.biased = new Matrix(neuronCount, 1);
     }
@@ -17,8 +19,11 @@ public class Layer {
         return layer;
     }
     public static void forward(Layer curr, Layer prev) {
-        System.out.println("prev.output: " + prev.output + "prev.weights: " +  prev.weights + " curr.biased " + curr.biased);
-        curr.output = prev.output.multiply(prev.weights).transpose().add(curr.biased).sigmoid();
+        Matrix transposedPrev = prev.output.transpose();
+        curr.output = transposedPrev.multiply(prev.weights).transpose().add(curr.biased).sigmoid();
+    }
+    public int getNumberOfNeurons() {
+        return numberOfNeurons;
     }
     @Override
     public String toString() {
@@ -27,6 +32,7 @@ public class Layer {
       sb.append(output);
       sb.append(biased);
       sb.append(weights);
+      sb.append("]\n");
       return sb.toString();
     }
 }

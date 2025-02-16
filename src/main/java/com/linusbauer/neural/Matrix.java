@@ -30,7 +30,7 @@ public class Matrix {
     }
     public Matrix set(int row, int col, float val) {
         if (row < 0 || col < 0 || row >= rows || col >= cols) {
-            throw new IndexOutOfBoundsException();
+            throw new IndexOutOfBoundsException("row=" + row + ", col=" + col + ", rows=" + rows + ", cols=" + cols);
         }
         this.data[row * cols + col] = val;
         return this;
@@ -68,7 +68,7 @@ public class Matrix {
             return this;
         }
         if (this.cols != other.rows) {
-            throw new IllegalArgumentException("Cannot multiply matrix with different number of columns and rows");
+            throw new IllegalArgumentException("Cannot multiply matrix with different number of columns and rows" + " this.cols= " +  this.cols + " this.rows=" + this.rows + ", other.rows= "+ other.rows + " other.cols=" + other.cols);
         }
         Matrix result = new Matrix(this.rows, other.cols);
         int n = this.cols;
@@ -107,6 +107,20 @@ public class Matrix {
         }
         return this;
     }
+    public Matrix multiplyInplace(Matrix other) {
+        if (other == null) {
+            return this;
+        }
+        if (this.rows != other.rows || this.cols != other.cols) {
+            throw new IllegalArgumentException("Matrix does not have the same number of columns and rows this.rows=" + this.rows + ", other.rows=" + other.rows + ", other.rows=" + other.rows + ", other.cols=" + other.cols);
+        }
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                this.data[i*cols+j] *= other.data[i*cols+j];
+            }
+        }
+        return this;
+    }
     public Matrix transpose() {
         Matrix result = new Matrix(this.cols, this.rows);
         for (int i = 0; i < this.rows; i++) {
@@ -116,6 +130,17 @@ public class Matrix {
         }
         return result;
     }
+
+    public float sum() {
+        float sum = 0;
+        for (int i = 0; i < this.rows; i++) {
+            for (int j = 0; j < this.cols; j++) {
+                sum += this.data[i*cols+j];
+            }
+        }
+        return sum;
+    }
+
     private float sigmoid(float val) {
         return (float) (1 / (1 + Math.exp(-val)));
     }
