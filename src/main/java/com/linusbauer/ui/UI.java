@@ -29,10 +29,10 @@ public class UI {
         this.cardLayout = new CardLayout();
         this.contentPanel = new JPanel(this.cardLayout);
         homescreen();
-        java.util.List<Integer> layers = new ArrayList<>();
+        List<Integer> layers = new ArrayList<>();
         layers.add(784);
-        layers.add(28);
-        layers.add(28);
+        layers.add(200);
+        layers.add(200);
         layers.add(10);
         List<String> outputs = new ArrayList<>();
         outputs.add("0");

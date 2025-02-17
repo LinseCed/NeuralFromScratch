@@ -3,11 +3,16 @@ package com.linusbauer.ui;
 import com.linusbauer.neural.Matrix;
 import com.linusbauer.neural.NeuralNetwork;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
+import java.awt.image.ConvolveOp;
+import java.awt.image.Kernel;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,7 +36,8 @@ public class TestPanel extends JPanel {
         this.g2d.setColor(Color.BLACK);
         g2d.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
         g2d.setColor(Color.WHITE);
-        g2d.setStroke(new BasicStroke(20, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+        g2d.setStroke(new BasicStroke(40, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         JPanel centerPanel = new JPanel();
         centerPanel.setOpaque(false);
         GridBagConstraints c = new GridBagConstraints();
@@ -110,16 +116,34 @@ public class TestPanel extends JPanel {
     }
 
     private String testDrawnImage() {
-        BufferedImage small = new BufferedImage(28, 28, BufferedImage.TYPE_INT_ARGB);
+        BufferedImage small = new BufferedImage(28, 28, BufferedImage.TYPE_BYTE_GRAY);
+        Graphics2D g2d = small.createGraphics();
+        g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+        g2d.drawImage(canvas, 0, 0, 28, 28,null);
+        g2d.dispose();
+        float[] blurKernel = {
+                1 / 16f, 2 / 16f, 1 / 16f,
+                2 / 16f, 4 / 16f, 2 / 16f,
+                1 / 16f, 2 / 16f, 1 / 16f
+        };
+        Kernel kernel = new Kernel(3, 3, blurKernel);
+        ConvolveOp op = new ConvolveOp(kernel, ConvolveOp.EDGE_NO_OP, null);
+        small = op.filter(small, null);
+        File outputFile = new File("test.png");
+        try {
+            ImageIO.write(small, "png", outputFile);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         Matrix input = new Matrix(784, 1);
         float[] data = small.getData().getPixels(0, 0, 28, 28, (float[]) null);
         for (int i = 0; i < 28; i++) {
             for (int j = 0; j < 28; j++) {
-                input.set(i + j, 0, data[i * 28 + j * 4]);
+                input.set(i * 28 + j, 0, ((data[i * 28 + j] / 255.f * 0.99f) + 0.01f));
             }
         }
+        System.out.println(input);
         String result = network.forward(input);
-        network.backprop(this.expected);
         return result;
     }
 

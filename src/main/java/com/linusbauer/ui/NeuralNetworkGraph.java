@@ -1,5 +1,6 @@
 package com.linusbauer.ui;
 
+import com.linusbauer.neural.Matrix;
 import com.linusbauer.neural.NeuralNetwork;
 
 import javax.swing.*;
@@ -50,20 +51,34 @@ public class NeuralNetworkGraph extends JPanel {
         int layerSpacing = width / (numLayers + 1);
         for (int i = 0; i < numLayers; i++) {
             int numNeurons = network.getLayers().get(i).getNumberOfNeurons();
-            int neuronSpacing = height / (numNeurons + 1);
             for (int j = 0; j < numNeurons; j++) {
                 int x = layerSpacing * (i + 1);
                 int y = layerSpacing * (j + 1);
+                float outputValue = network.getLayers().get(i).output.at(j, 0);
                 g2d.setColor(Color.WHITE);
                 g2d.fillOval(x - neuronRadius, y - neuronRadius, 2 * neuronRadius, 2 * neuronRadius);
                 g2d.setColor(Color.BLACK);
                 g2d.drawOval(x - neuronRadius, y - neuronRadius, 2 * neuronRadius, 2 * neuronRadius);
+                g2d.setColor(Color.BLACK);
+                g2d.setFont(new Font("Arial", Font.BOLD, 12));
+                String text = String.format("%.2f", outputValue);
+                int textWidth = g2d.getFontMetrics().stringWidth(text);
+                int textHeight = g2d.getFontMetrics().getHeight();
+                g2d.drawString(text, x - textWidth / 2, y - textHeight / 4);
                 if (i < numLayers - 1) {
                     int nextLayerNeurons = network.getLayers().get(i + 1).getNumberOfNeurons();
-                    int nextNeuronSpacing = height / (nextLayerNeurons + 1);
                     for (int k = 0; k < nextLayerNeurons; k++) {
                         int nextX = layerSpacing * (i + 2);
                         int nextY = layerSpacing * (k + 1);
+                        float weight = network.getLayers().get(i).weights.at(k, j);
+                        float thickness = (float) Math.abs(weight * 3);
+                        g2d.setStroke(new BasicStroke(thickness));
+                        if (weight >= 0) {
+                            g2d.setColor(Color.BLUE);
+                        } else {
+                            g2d.setColor(Color.RED);
+                        }
+                        g2d.drawLine(x, y, nextX, nextY);
                     }
                 }
             }

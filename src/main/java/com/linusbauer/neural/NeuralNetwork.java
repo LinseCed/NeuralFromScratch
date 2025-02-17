@@ -9,7 +9,7 @@ public class NeuralNetwork {
     private final float learningRate;
     private final int numberOfNeurons;
     public NeuralNetwork(List<Integer> config, List<String> outputLabels) {
-        this.learningRate = 0.05f;
+        this.learningRate = 0.01f;
         this.numberOfNeurons = config.stream().mapToInt(i -> i).sum();
         this.layers = new ArrayList<>();
         this.outputLabels = outputLabels;
@@ -24,16 +24,16 @@ public class NeuralNetwork {
         }
         for (Layer layer : layers) {
            if (layer.weights != null) {
-              layer.weights.randomize(-0.5f, 0.5f);
+              layer.weights.randomize(1f, -1f);
            }
         }
     }
 
-    public String forward(final Matrix input) {
+    public String forward(Matrix input) {
         if (layers.getFirst().output.getCols() != input.getCols() || layers.getFirst().output.getRows() != input.getRows()) {
             throw new IllegalStateException("Size of Input must match the size of first layer output: " + layers.getFirst().output.getCols() + " != " + input.getCols() + ", " + layers.getFirst().output.getRows() + " !=" + input.getRows());
         }
-        layers.getFirst().output = input;
+        layers.getFirst().output = input.copy();
         for (int i = 1; i < layers.size(); i++) {
             Layer curr = layers.get(i);
             Layer prev = layers.get(i - 1);
@@ -53,27 +53,38 @@ public class NeuralNetwork {
 
     public float cost(Matrix expected) {
         Matrix actual = layers.getLast().output;
-        return actual.subtract(expected).square().sum() / actual.getRows();
+        return actual.subtract(expected).square().multiply(0.5f).sum() / actual.getRows();
     }
 
-    public void backprop(Matrix expected) {
+    public void backprop(Matrix exp) {
         Matrix output = layers.getLast().output;
-        if (output.getCols() != expected.getCols() || output.getRows() != expected.getRows()) {
+        if (output.getCols() != exp.getCols() || output.getRows() != exp.getRows()) {
             throw new IllegalArgumentException("output and expected are not the same size");
         }
-        Matrix delta = output.subtract(expected);
+        Matrix delta = output.subtract(exp).multiplyInplace(sigmoidDerivative(output));
         for (int i = layers.size() - 1; i > 0; i--) {
             Layer curr = layers.get(i);
             Layer prev = layers.get(i - 1);
-            curr.biased = (curr.biased.subtract(delta.multiply(learningRate)));
-            prev.weights = (prev.weights.subtract((prev.output.multiply(delta.transpose())).multiply(learningRate)));
-            delta = (delta.transpose().multiply(prev.weights.transpose()).transpose().multiplyInplace(sigmoidDerivative(prev.output)));
+            curr.biased = curr.biased.subtract(delta.multiply(learningRate));
+            prev.weights = prev.weights.subtract(delta.multiply(prev.output.transpose()).multiply(learningRate));
+            delta = (prev.weights.transpose().multiply(delta)).multiplyInplace(sigmoidDerivative(prev.output));
         }
     }
 
-    public Matrix sigmoidDerivative(Matrix a) {
+    private Matrix sigmoidDerivative(Matrix a) {
         Matrix one = new Matrix(a.getRows(), a.getCols(), 1);
         return (a.multiplyInplace(one.subtract(a)));
+    }
+
+    public boolean first = true;
+    public void train(Matrix input, int expected) {
+        if (first) {
+            first = false;
+        }
+        forward(input);
+        Matrix expectedMatrix = new Matrix(10, 1, 0);
+        expectedMatrix.set(expected, 0, 1);
+        backprop(expectedMatrix);
     }
 
     public int numberOfLayers() {

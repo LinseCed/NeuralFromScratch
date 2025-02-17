@@ -42,12 +42,13 @@ public class Matrix {
         if (this.cols != other.cols || this.rows != other.rows) {
             throw new IllegalArgumentException("Matrix does not have the same number of columns and rows");
         }
+        Matrix result = new Matrix(this.rows, this.cols);
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
-                this.data[i*cols+j] += other.data[i*cols+j];
+                result.data[i*cols+j] = this.data[i*cols+j] + other.data[i*cols+j];
             }
         }
-        return this;
+        return result;
     }
     public Matrix subtract(Matrix other) {
         if (other == null) {
@@ -56,19 +57,20 @@ public class Matrix {
         if (this.cols != other.cols || this.rows != other.rows) {
             throw new IllegalArgumentException("Matrix does not have the same number of columns and rows");
         }
+        Matrix result = new Matrix(this.rows, this.cols);
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
-                this.data[i*cols+j] -= other.data[i*cols+j];
+                result.data[i*cols+j] = this.data[i*cols+j] - other.data[i*cols+j];
             }
         }
-        return this;
+        return result;
     }
     public Matrix multiply(Matrix other) {
         if (other == null) {
             return this;
         }
         if (this.cols != other.rows) {
-            throw new IllegalArgumentException("Cannot multiply matrix with different number of columns and rows" + " this.cols= " +  this.cols + " this.rows=" + this.rows + ", other.rows= "+ other.rows + " other.cols=" + other.cols);
+            throw new IllegalArgumentException("Cannot multiply matrix with different number of columns and rows" + " this.rows=" + this.rows +  " this.cols= " +  this.cols + ", other.rows= "+ other.rows + " other.cols=" + other.cols);
         }
         Matrix result = new Matrix(this.rows, other.cols);
         int n = this.cols;
@@ -91,36 +93,49 @@ public class Matrix {
         }
         return this;
     }
-    public Matrix multiply(float val) {
+
+    public Matrix copy() {
+        Matrix result = new Matrix(this.rows, this.cols);
         for (int i = 0; i < this.rows; i++) {
             for (int j = 0; j < this.cols; j++) {
-                this.data[i*cols+j] *= val;
+                result.data[i*cols+j] = this.data[i*cols+j];
             }
         }
-        return this;
+        return result;
     }
-    public Matrix randomize(float max, float min) {
+
+    public Matrix multiply(float val) {
+        Matrix result = new Matrix(this.rows, this.cols);
+        for (int i = 0; i < this.rows; i++) {
+            for (int j = 0; j < this.cols; j++) {
+                result.data[i*cols+j] = this.data[i*cols+j] * val;
+            }
+        }
+        return result;
+    }
+    public void randomize(float max, float min) {
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
-                this.data[i*cols+j] = (float) Math.random() * (max - min) + min;
+                this.data[i*cols+j] = (float) (Math.random() * (max - min) + min);
             }
         }
-        return this;
     }
     public Matrix multiplyInplace(Matrix other) {
         if (other == null) {
             return this;
         }
         if (this.rows != other.rows || this.cols != other.cols) {
-            throw new IllegalArgumentException("Matrix does not have the same number of columns and rows this.rows=" + this.rows + ", other.rows=" + other.rows + ", other.rows=" + other.rows + ", other.cols=" + other.cols);
+            throw new IllegalArgumentException("Matrix does not have the same number of columns and rows this.rows=" + this.rows + ", this.cols=" + this.cols + ", other.rows=" + other.rows + ", other.cols=" + other.cols);
         }
+        Matrix result = new Matrix(this.rows, this.cols);
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
-                this.data[i*cols+j] *= other.data[i*cols+j];
+                result.data[i*cols+j] = this.data[i*cols+j] * other.data[i*cols+j];
             }
         }
-        return this;
+        return result;
     }
+
     public Matrix transpose() {
         Matrix result = new Matrix(this.cols, this.rows);
         for (int i = 0; i < this.rows; i++) {
@@ -140,17 +155,12 @@ public class Matrix {
         }
         return sum;
     }
-
-    private float sigmoid(float val) {
-        return (float) (1 / (1 + Math.exp(-val)));
-    }
     public Matrix sigmoid() {
-        for (int i = 0; i < rows; i++) {
-            for (int j = 0; j < cols; j++) {
-                this.set(i, j, this.sigmoid(this.at(i, j)));
-            }
+        Matrix result = new Matrix(this.rows, this.cols);
+        for (int i = 0; i < data.length; i++) {
+            result.data[i] = (float) (1 / (1 + Math.exp(-this.data[i])));
         }
-        return this;
+        return result;
     }
     public float[] getData() {
         return this.data;
