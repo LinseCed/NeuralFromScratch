@@ -31,8 +31,8 @@ public class UI {
         homescreen();
         List<Integer> layers = new ArrayList<>();
         layers.add(784);
-        layers.add(200);
-        layers.add(200);
+        layers.add(32);
+        layers.add(16);
         layers.add(10);
         List<String> outputs = new ArrayList<>();
         outputs.add("0");

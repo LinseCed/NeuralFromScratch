@@ -5,6 +5,8 @@ import com.linusbauer.neural.NeuralNetwork;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.geom.AffineTransform;
+import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -16,8 +18,10 @@ public class TrainPanel extends JPanel {
         this.neuralNetwork = neuralNetwork;
         this.setPreferredSize(new Dimension(400, 450));
         this.setBackground(Color.LIGHT_GRAY);
-        int epochs = 20;
+        int epochs = 0;
+        boolean trainWithRotation = false;
         for (int k = 0; k < epochs; k++) {
+            int progress = 0;
             InputStream inputStream = TrainPanel.class.getClassLoader().getResourceAsStream("mnist_train.csv");
             if (inputStream != null) {
                 try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
@@ -32,6 +36,39 @@ public class TrainPanel extends JPanel {
                             }
                         }
                         neuralNetwork.train(image, expectedValue);
+                        if (trainWithRotation) {
+                            BufferedImage img = new BufferedImage(28, 28, BufferedImage.TYPE_BYTE_GRAY);
+                            for (int y = 0; y < 28; y++) {
+                                for (int n = 0; n < 28; n++) {
+                                    float pixelValue = image.at(y * 28 + n, 0);
+                                    int gray = (int) (pixelValue * 255);
+                                    int rgb = new Color(gray, gray, gray).getRGB();
+                                    img.setRGB(n, y, rgb);
+                                }
+                            }
+                            BufferedImage rotatedImg = rotateImage(img, 10);
+                            Matrix rotatedMatrix = new Matrix(784, 1);
+                            for (int y = 0; y < 28; y++) {
+                                for (int x = 0; x < 28; x++) {
+                                    int gray = (rotatedImg.getRGB(x, y) & 0xFF);
+                                    rotatedMatrix.set(y * 28 + x, 0, gray / 255.0f);
+                                }
+                            }
+                            neuralNetwork.train(rotatedMatrix, expectedValue);
+                            rotatedImg = rotateImage(img, -10);
+                            rotatedMatrix = new Matrix(784, 1);
+                            for (int y = 0; y < 28; y++) {
+                                for (int x = 0; x < 28; x++) {
+                                    int gray = (rotatedImg.getRGB(x, y) & 0xFF);
+                                    rotatedMatrix.set(y * 28 + x, 0, gray / 255.0f);
+                                }
+                            }
+                            neuralNetwork.train(rotatedMatrix, expectedValue);
+                        }
+                        progress++;
+                        if (progress % 1000 == 0) {
+                            System.out.println(progress);
+                        }
                     }
                     System.out.println("Epoche: " + k);
                 } catch (IOException e) {
@@ -71,5 +108,20 @@ public class TrainPanel extends JPanel {
     }
     public String getPanelName() {
         return "TrainPanel";
+    }
+
+    private static BufferedImage rotateImage(BufferedImage img, double angle) {
+        int w = img.getWidth();
+        int h = img.getHeight();
+        BufferedImage rotated = new BufferedImage(w, h, img.getType());
+
+        Graphics2D g2d = rotated.createGraphics();
+        AffineTransform transform = new AffineTransform();
+        transform.rotate(Math.toRadians(angle), w / 2.0, h / 2.0);
+        g2d.setTransform(transform);
+        g2d.drawImage(img, 0, 0, null);
+        g2d.dispose();
+
+        return rotated;
     }
 }

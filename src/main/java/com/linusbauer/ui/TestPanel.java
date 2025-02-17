@@ -142,9 +142,7 @@ public class TestPanel extends JPanel {
                 input.set(i * 28 + j, 0, ((data[i * 28 + j] / 255.f * 0.99f) + 0.01f));
             }
         }
-        System.out.println(input);
-        String result = network.forward(input);
-        return result;
+        return network.forward(input);
     }
 
     public String getPanelName() {
