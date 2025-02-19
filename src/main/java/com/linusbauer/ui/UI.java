@@ -24,7 +24,7 @@ public class UI {
         }
         this.frame = new JFrame();
         this.frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        this.frame.setSize(800, 600);
+        this.frame.setSize(1920, 1080);
         this.frame.setLocationRelativeTo(null);
         this.cardLayout = new CardLayout();
         this.contentPanel = new JPanel(this.cardLayout);
@@ -32,7 +32,7 @@ public class UI {
         List<Integer> layers = new ArrayList<>();
         layers.add(784);
         layers.add(32);
-        layers.add(16);
+        layers.add(32);
         layers.add(10);
         List<String> outputs = new ArrayList<>();
         outputs.add("0");

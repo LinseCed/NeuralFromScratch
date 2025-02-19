@@ -1,21 +1,25 @@
 package com.linusbauer.ui;
 
-import com.linusbauer.neural.Matrix;
 import com.linusbauer.neural.NeuralNetwork;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
 
 public class NeuralNetworkGraph extends JPanel {
     NeuralNetwork network;
+    private double scaleFactor = 1.0;
+    JPanel graphPanel;
     NeuralNetworkGraph(NeuralNetwork network) {
         this.network = network;
         setLayout(new BorderLayout());
-        JPanel graphPanel = new JPanel() {
+        graphPanel = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
                 Graphics2D g2d = (Graphics2D) g;
+                g2d.scale(scaleFactor, scaleFactor);
                 drawNeuralNetwork(g2d, network);
             }
         };
@@ -25,13 +29,45 @@ public class NeuralNetworkGraph extends JPanel {
         scrollPane.setMinimumSize(new Dimension(400, 400));
         scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-        scrollPane.getVerticalScrollBar().setUnitIncrement(20);
-        scrollPane.getHorizontalScrollBar().setUnitIncrement(20);
+        scrollPane.getVerticalScrollBar().setUnitIncrement(50);
+        scrollPane.getHorizontalScrollBar().setUnitIncrement(50);
+        graphPanel.addMouseWheelListener(new MouseWheelListener() {
+            @Override
+            public void mouseWheelMoved(MouseWheelEvent e) {
+                if (e.isControlDown()) { // Check if CTRL is held
+                    if (e.getPreciseWheelRotation() < 0) {
+                        zoomIn();
+                    } else {
+                        zoomOut();
+                    }
+                    e.consume();
+                } else {
+                    scrollPane.dispatchEvent(e);
+                }
+            }
+        });
         add(scrollPane, BorderLayout.CENTER);
     }
 
+
+    private void zoomIn() {
+        scaleFactor *= 1.1;
+        applyZoom();
+    }
+
+    private void zoomOut() {
+        scaleFactor *= 0.9;
+        applyZoom();
+    }
+
+    private void applyZoom() {
+        graphPanel.setPreferredSize(calculatePreferredSize());
+        graphPanel.revalidate();
+        graphPanel.repaint();
+    }
+
     private Dimension calculatePreferredSize() {
-        int layerSpacing = 200;
+        int layerSpacing = 800;
         int maxNeurons = 0;
         int numLayers = network.numberOfLayers();
 
@@ -39,18 +75,17 @@ public class NeuralNetworkGraph extends JPanel {
             maxNeurons = Math.max(maxNeurons, network.getLayers().get(i).getNumberOfNeurons());
         }
 
-        int width = layerSpacing * numLayers + 100;
-        int height = 100 * maxNeurons + 100;
+        int width = (int) (scaleFactor * layerSpacing * numLayers + 100);
+        int height = (int) (scaleFactor * 100 * maxNeurons + 100);
 
         return new Dimension(width, height);
     }
 
     private void drawNeuralNetwork(Graphics2D g2d, NeuralNetwork network) {
-        int neuronRadius = 20;
+        int neuronRadius = (int) (20 * scaleFactor);
         int numLayers = network.numberOfLayers();
-        int layerSpacing = 200;
-        int panelWidth = 400;
-        int panelHeight = 400;
+        int layerSpacing = (int) (800 * scaleFactor);
+        int panelHeight = (int) (scaleFactor * 400);
 
         int[] layerCenters = new int[numLayers];
 
@@ -68,7 +103,7 @@ public class NeuralNetworkGraph extends JPanel {
 
         for (int i = 0; i < numLayers; i++) {
             int numNeurons = network.getLayers().get(i).getNumberOfNeurons();
-            int x = layerSpacing * (i + 1);
+            int x = (int) (layerSpacing * (i + 0.1));
 
             for (int j = 0; j < numNeurons; j++) {
                 int y = layerCenters[i] + j * (2 * neuronRadius + 20);
@@ -87,7 +122,7 @@ public class NeuralNetworkGraph extends JPanel {
 
                 if (i < numLayers - 1) {
                     int nextNumNeurons = network.getLayers().get(i + 1).getNumberOfNeurons();
-                    int nextX = layerSpacing * (i + 2);
+                    int nextX = (int) (layerSpacing * (i + 1.1));
                     int nextYCenter = layerCenters[i + 1];
 
                     for (int k = 0; k < nextNumNeurons; k++) {

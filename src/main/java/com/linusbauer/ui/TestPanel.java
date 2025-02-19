@@ -14,7 +14,9 @@ import java.awt.image.Kernel;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class TestPanel extends JPanel {
     private final transient BufferedImage canvas;
@@ -24,6 +26,20 @@ public class TestPanel extends JPanel {
     private final transient NeuralNetwork network;
     private Matrix expected;
     private List<JButton> numberButtons;
+    private static final Map<Integer, Color> NUMBER_COLORS = new HashMap<>();
+    static {
+        NUMBER_COLORS.put(0, Color.RED);
+        NUMBER_COLORS.put(1, Color.BLUE);
+        NUMBER_COLORS.put(2, Color.GREEN);
+        NUMBER_COLORS.put(3, Color.ORANGE);
+        NUMBER_COLORS.put(4, Color.MAGENTA);
+        NUMBER_COLORS.put(5, Color.CYAN);
+        NUMBER_COLORS.put(6, Color.YELLOW);
+        NUMBER_COLORS.put(7, Color.PINK);
+        NUMBER_COLORS.put(8, new Color(128, 0, 128)); // Purple
+        NUMBER_COLORS.put(9, new Color(165, 42, 42)); // Brown
+    }
+
     public TestPanel(NeuralNetwork network) {
         this.network = network;
         this.numberButtons = new ArrayList<>();
@@ -31,7 +47,7 @@ public class TestPanel extends JPanel {
         this.setPreferredSize(new Dimension(400, 450));
         this.setBackground(Color.LIGHT_GRAY);
         this.setLayout(new BorderLayout(10, 10));
-        this.canvas = new BufferedImage(400, 400, BufferedImage.TYPE_INT_ARGB);
+        this.canvas = new BufferedImage(800, 800, BufferedImage.TYPE_INT_ARGB);
         this.g2d = canvas.createGraphics();
         this.g2d.setColor(Color.BLACK);
         g2d.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
@@ -45,6 +61,9 @@ public class TestPanel extends JPanel {
         c.gridy = 0;
         centerPanel.add(getDrawingPanel(), c);
         this.add(centerPanel, BorderLayout.CENTER);
+        JPanel resultPanel = new JPanel();
+        resultPanel.setPreferredSize(new Dimension(400, 50));
+        resultPanel.setBackground(Color.GRAY);
         JPanel controlPanel = new JPanel();
         controlPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 10, 10));
         JButton clear = new JButton("Clear");
@@ -54,32 +73,21 @@ public class TestPanel extends JPanel {
         });
         JButton testButton = new JButton("Test");
         JLabel resultLabel = new JLabel("Result: ");
+        resultLabel.setFont(new Font("Arial", Font.BOLD, 20));
         testButton.addActionListener(e -> {
-            resultLabel.setText("Result: " + testDrawnImage());
+            int detectedNumber = Integer.parseInt(testDrawnImage());
+            resultLabel.setText("Result: " + detectedNumber);
+            Color color = NUMBER_COLORS.getOrDefault(detectedNumber, Color.GRAY);
+            resultPanel.setBackground(color);
+            resultPanel.repaint();
         });
         resultLabel.setText("Result: ");
+        resultLabel.setForeground(Color.BLACK);
+        resultPanel.add(resultLabel, BorderLayout.CENTER);
         controlPanel.add(testButton);
-        controlPanel.add(resultLabel);
         controlPanel.add(clear);
+        this.add(resultPanel, BorderLayout.NORTH);
         this.add(controlPanel, BorderLayout.SOUTH);
-        JPanel numberPanel = new JPanel();
-        numberPanel.setLayout(new GridLayout(1, 10, 5, 5));
-        for (int i = 0; i < 10; i++) {
-            JButton numberButton = new JButton("" + i);
-            numberButton.setName("" + i);
-            numberButton.setPreferredSize(new Dimension(40, 40));
-            numberButton.addActionListener(e -> {
-                this.numberButtons.forEach(button -> {
-                    button.setBackground(Color.WHITE);
-                    this.expected = new Matrix(10, 1);
-                });
-                this.expected.set(Integer.parseInt(numberButton.getName()), 0, 1);
-                numberButton.setBackground(Color.LIGHT_GRAY);
-            });
-            this.numberButtons.add(numberButton);
-            numberPanel.add(numberButton);
-        }
-        this.add(numberPanel, BorderLayout.NORTH);
     }
 
     private JPanel getDrawingPanel() {
@@ -90,7 +98,7 @@ public class TestPanel extends JPanel {
                 g.drawImage(canvas, 0, 0, this);
             }
         };
-        drawingPanel.setPreferredSize(new Dimension(400, 400));
+        drawingPanel.setPreferredSize(new Dimension(800, 800));
         drawingPanel.setMinimumSize(new Dimension(400, 400));
         drawingPanel.setMaximumSize(new Dimension(400, 400));
         drawingPanel.setBackground(Color.BLACK);

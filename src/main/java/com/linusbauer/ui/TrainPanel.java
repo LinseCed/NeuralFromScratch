@@ -18,7 +18,7 @@ public class TrainPanel extends JPanel {
         this.neuralNetwork = neuralNetwork;
         this.setPreferredSize(new Dimension(400, 450));
         this.setBackground(Color.LIGHT_GRAY);
-        int epochs = 0;
+        int epochs = 20;
         boolean trainWithRotation = false;
         for (int k = 0; k < epochs; k++) {
             int progress = 0;

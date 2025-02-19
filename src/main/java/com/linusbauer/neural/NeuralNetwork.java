@@ -9,7 +9,7 @@ public class NeuralNetwork {
     private final float learningRate;
     private final int numberOfNeurons;
     public NeuralNetwork(List<Integer> config, List<String> outputLabels) {
-        this.learningRate = 0.01f;
+        this.learningRate = 0.005f;
         this.numberOfNeurons = config.stream().mapToInt(i -> i).sum();
         this.layers = new ArrayList<>();
         this.outputLabels = outputLabels;
